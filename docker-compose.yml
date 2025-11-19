@@ -12,7 +12,9 @@ services:
       - .:/var/www/html/modules/contrib/dkan
       - drupal_files:/var/www/html/sites/default/files
       - drupal_vendor:/var/www/html/vendor
-      - drupal_web:/var/www/html/web
+      - drupal_core:/var/www/html/core
+      - drupal_themes:/var/www/html/themes
+      - drupal_profiles:/var/www/html/profiles
     environment:
       - DRUPAL_DATABASE_HOST=${DRUPAL_DATABASE_HOST:-db}
       - DRUPAL_DATABASE_PORT=${DRUPAL_DATABASE_PORT:-3306}
@@ -21,7 +23,6 @@ services:
       - DRUPAL_DATABASE_PASSWORD=${DRUPAL_DATABASE_PASSWORD:-drupal}
       - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-512M}
       - PHP_MAX_EXECUTION_TIME=${PHP_MAX_EXECUTION_TIME:-300}
-      - APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT:-/var/www/html/web}
     depends_on:
       db:
         condition: service_healthy
@@ -96,7 +97,9 @@ volumes:
   db_data:
   drupal_files:
   drupal_vendor:
-  drupal_web:
+  drupal_core:
+  drupal_themes:
+  drupal_profiles:
 
 networks:
   dkan_network:
