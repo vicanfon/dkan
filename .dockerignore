@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.circleci
+.github
+.qlty
+
+# Documentation
+*.md
+docs/
+
+# Tests
+tests/
+cypress/
+phpunit.xml
+cypress.config.js
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Development files
+.env
+.env.local
+.ddev/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# PHP
+vendor/
+composer.lock
+
+# Build artifacts
+*.log

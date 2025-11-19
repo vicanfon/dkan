@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dkan_web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html/modules/contrib/dkan
+      - drupal_files:/var/www/html/sites/default/files
+      - drupal_vendor:/var/www/html/vendor
+      - drupal_web:/var/www/html/web
+    environment:
+      - DRUPAL_DATABASE_HOST=${DRUPAL_DATABASE_HOST:-db}
+      - DRUPAL_DATABASE_PORT=${DRUPAL_DATABASE_PORT:-3306}
+      - DRUPAL_DATABASE_NAME=${DRUPAL_DATABASE_NAME:-drupal}
+      - DRUPAL_DATABASE_USERNAME=${DRUPAL_DATABASE_USERNAME:-drupal}
+      - DRUPAL_DATABASE_PASSWORD=${DRUPAL_DATABASE_PASSWORD:-drupal}
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-512M}
+      - PHP_MAX_EXECUTION_TIME=${PHP_MAX_EXECUTION_TIME:-300}
+      - APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT:-/var/www/html/web}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - dkan_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  db:
+    image: mysql:8.0
+    container_name: dkan_db
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-drupal}
+      - MYSQL_USER=${MYSQL_USER:-drupal}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-drupal}
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    networks:
+      - dkan_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: dkan_phpmyadmin
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=${MYSQL_USER:-drupal}
+      - PMA_PASSWORD=${MYSQL_PASSWORD:-drupal}
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - dkan_network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: dkan_mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+    restart: unless-stopped
+    networks:
+      - dkan_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dkan_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    networks:
+      - dkan_network
+
+volumes:
+  db_data:
+  drupal_files:
+  drupal_vendor:
+  drupal_web:
+
+networks:
+  dkan_network:
+    driver: bridge
