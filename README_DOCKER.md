@@ -28,6 +28,7 @@ This will:
 - Build the custom Drupal image with all required PHP extensions
 - Start MySQL, PHPMyAdmin, Mailhog, and Redis
 - Create necessary volumes for persistent data
+- Automatically set up proper file permissions
 
 ### 2. Install Drupal
 
@@ -60,9 +61,25 @@ Navigate to `http://localhost:8080` and follow the Drupal installation wizard:
   - Host: `db`
   - Port: `3306`
 
+**If you encounter a permissions error** during installation (e.g., "The directory sites/default/files is not writable"), run this in a new terminal:
+
+```bash
+docker-compose exec web bash /var/www/html/modules/contrib/dkan/scripts/fix-permissions.sh
+```
+
+Then refresh your browser and continue the installation.
+
 ### 4. Enable DKAN
 
-After Drupal installation, enable the DKAN module:
+After Drupal installation, you can use the installation script:
+
+```bash
+docker-compose exec web bash
+cd /var/www/html
+bash modules/contrib/dkan/scripts/install-dkan.sh
+```
+
+Or install manually:
 
 ```bash
 docker-compose exec web bash
@@ -73,6 +90,21 @@ composer require getdkan/dkan
 drush en dkan -y
 # Clear cache
 drush cr
+```
+
+### 5. Access DKAN
+
+Once installed, access your DKAN data catalog at:
+- **Main site**: http://localhost:8080
+- **DKAN API**: http://localhost:8080/api/1
+- **Dataset Search**: http://localhost:8080/search
+- **Metastore API**: http://localhost:8080/api/1/metastore/schemas
+
+**Optional - Add Sample Content**:
+
+```bash
+docker-compose exec web drush en sample_content -y
+docker-compose exec web drush dkan:sample-content:create
 ```
 
 ## Access Points

@@ -4,6 +4,7 @@ FROM drupal:10-apache
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    curl \
     libzip-dev \
     libpng-dev \
     libjpeg-dev \
@@ -50,8 +51,15 @@ WORKDIR /var/www/html
 # Enable Apache modules
 RUN a2enmod rewrite headers expires
 
+# Copy custom entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80
 EXPOSE 80
+
+# Use custom entrypoint
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

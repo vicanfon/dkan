@@ -1,21 +1,23 @@
-.PHONY: help build up down restart logs shell db-shell composer drush clean install
+.PHONY: help build up down restart logs shell db-shell composer drush clean install fix-permissions install-dkan
 
 # Default target
 help:
 	@echo "DKAN Docker Management Commands"
 	@echo "================================"
-	@echo "make build        - Build Docker images"
-	@echo "make up           - Start all containers"
-	@echo "make down         - Stop all containers"
-	@echo "make restart      - Restart all containers"
-	@echo "make logs         - Show container logs"
-	@echo "make shell        - Access web container shell"
-	@echo "make db-shell     - Access database shell"
-	@echo "make composer     - Run composer install"
-	@echo "make drush        - Access Drush CLI"
-	@echo "make clean        - Remove all containers and volumes"
-	@echo "make install      - Full installation (build + up)"
-	@echo "make status       - Show container status"
+	@echo "make build            - Build Docker images"
+	@echo "make up               - Start all containers"
+	@echo "make down             - Stop all containers"
+	@echo "make restart          - Restart all containers"
+	@echo "make logs             - Show container logs"
+	@echo "make shell            - Access web container shell"
+	@echo "make db-shell         - Access database shell"
+	@echo "make composer         - Run composer install"
+	@echo "make drush            - Access Drush CLI"
+	@echo "make fix-permissions  - Fix Drupal file permissions"
+	@echo "make install-dkan     - Install DKAN module"
+	@echo "make clean            - Remove all containers and volumes"
+	@echo "make install          - Full installation (build + up)"
+	@echo "make status           - Show container status"
 
 # Build Docker images
 build:
@@ -52,6 +54,16 @@ composer:
 # Access Drush
 drush:
 	docker-compose exec web drush
+
+# Fix file permissions
+fix-permissions:
+	@echo "Fixing Drupal file permissions..."
+	docker-compose exec web bash /var/www/html/modules/contrib/dkan/scripts/fix-permissions.sh
+
+# Install DKAN module
+install-dkan:
+	@echo "Installing DKAN..."
+	docker-compose exec web bash /var/www/html/modules/contrib/dkan/scripts/install-dkan.sh
 
 # Clean everything (WARNING: Deletes all data!)
 clean:
