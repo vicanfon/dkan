@@ -15,7 +15,7 @@ if [ ! -f "composer.json" ]; then
 fi
 
 # Check if Drush is available
-if ! command -v drush &> /dev/null; then
+if [ ! -f "./vendor/bin/drush" ]; then
     echo "Installing Drush..."
     composer require drush/drush
 fi
@@ -25,11 +25,11 @@ composer require getdkan/dkan
 
 echo ""
 echo "Step 2: Enabling DKAN core modules..."
-drush en dkan -y
+./vendor/bin/drush en dkan -y
 
 echo ""
 echo "Step 3: Clearing cache..."
-drush cr
+./vendor/bin/drush cr
 
 echo ""
 echo "=========================================="
@@ -39,8 +39,8 @@ echo ""
 echo "Optional: Install sample content"
 echo "Run the following commands to add sample datasets:"
 echo ""
-echo "  drush en sample_content -y"
-echo "  drush dkan:sample-content:create"
+echo "  ./vendor/bin/drush en sample_content -y"
+echo "  ./vendor/bin/drush dkan:sample-content:create"
 echo ""
 echo "Access your DKAN site:"
 echo "  - Main site: http://localhost:8080"
