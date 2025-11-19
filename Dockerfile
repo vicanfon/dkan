@@ -51,9 +51,31 @@ WORKDIR /var/www/html
 # Enable Apache modules
 RUN a2enmod rewrite headers expires
 
-# Copy custom entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# Create entrypoint script to handle permissions
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Create necessary directories and set permissions\n\
+mkdir -p /var/www/html/sites/default/files\n\
+mkdir -p /var/www/html/sites/default/files/translations\n\
+mkdir -p /var/www/html/sites/default/files/php\n\
+\n\
+# Set ownership\n\
+chown -R www-data:www-data /var/www/html/sites/default/files 2>/dev/null || true\n\
+chown -R www-data:www-data /var/www/html/vendor 2>/dev/null || true\n\
+chown -R www-data:www-data /var/www/html/web 2>/dev/null || true\n\
+\n\
+# Set permissions\n\
+chmod -R 775 /var/www/html/sites/default/files 2>/dev/null || true\n\
+\n\
+# Make sure settings.php is writable during install, readable after\n\
+if [ -f /var/www/html/sites/default/settings.php ]; then\n\
+    chmod 644 /var/www/html/sites/default/settings.php\n\
+fi\n\
+\n\
+# Execute the original entrypoint\n\
+exec docker-php-entrypoint apache2-foreground\n\
+' > /usr/local/bin/custom-entrypoint.sh && chmod +x /usr/local/bin/custom-entrypoint.sh
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
@@ -62,4 +84,4 @@ RUN chown -R www-data:www-data /var/www/html
 EXPOSE 80
 
 # Use custom entrypoint
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/custom-entrypoint.sh"]
